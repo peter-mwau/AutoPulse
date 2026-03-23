@@ -54,37 +54,40 @@ function Home() {
   const itemsPerPage = 6;
 
   // Categories based on car types
-  const categories = [
-    { id: "all", name: "All Vehicles", icon: "🚗", color: "blue" },
-    {
-      id: "luxury",
-      name: "Luxury",
-      icon: "👑",
-      color: "purple",
-      condition: (car) => car.price > 50000,
-    },
-    {
-      id: "sports",
-      name: "Sports",
-      icon: "🏎️",
-      color: "red",
-      condition: (car) => car.horsepower > 300,
-    },
-    {
-      id: "economy",
-      name: "Economy",
-      icon: "💰",
-      color: "green",
-      condition: (car) => car.price < 30000,
-    },
-    {
-      id: "performance",
-      name: "Performance",
-      icon: "⚡",
-      color: "yellow",
-      condition: (car) => car.horsepower > 400,
-    },
-  ];
+  const categories = useMemo(
+    () => [
+      { id: "all", name: "All Vehicles", icon: "🚗", color: "blue" },
+      {
+        id: "luxury",
+        name: "Luxury",
+        icon: "👑",
+        color: "purple",
+        condition: (car) => car.price > 50000,
+      },
+      {
+        id: "sports",
+        name: "Sports",
+        icon: "🏎️",
+        color: "red",
+        condition: (car) => car.horsepower > 300,
+      },
+      {
+        id: "economy",
+        name: "Economy",
+        icon: "💰",
+        color: "green",
+        condition: (car) => car.price < 30000,
+      },
+      {
+        id: "performance",
+        name: "Performance",
+        icon: "⚡",
+        color: "yellow",
+        condition: (car) => car.horsepower > 400,
+      },
+    ],
+    [],
+  );
 
   // Get unique makes for filter
   const makes = useMemo(() => {
@@ -162,6 +165,7 @@ function Home() {
     return filtered;
   }, [
     cars,
+    categories,
     searchTerm,
     selectedMake,
     selectedCategory,
@@ -178,19 +182,6 @@ function Home() {
     const endIndex = startIndex + itemsPerPage;
     return filteredCars.slice(startIndex, endIndex);
   }, [filteredCars, currentPage]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchTerm,
-    selectedMake,
-    selectedCategory,
-    priceRange,
-    horsepowerRange,
-    yearRange,
-    sortBy,
-  ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -268,7 +259,10 @@ function Home() {
               {categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    setCurrentPage(1);
+                  }}
                   className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
                     selectedCategory === category.id
                       ? "bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white shadow-lg shadow-[#00AEEF]/30"
@@ -292,7 +286,10 @@ function Home() {
                   type="text"
                   placeholder="Search by make or model..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full rounded-lg bg-black/50 px-10 py-3 text-white placeholder:text-gray-500 border border-white/10 focus:border-[#00AEEF] focus:outline-none focus:ring-1 focus:ring-[#00AEEF] transition-all"
                 />
               </div>
@@ -313,7 +310,10 @@ function Home() {
 
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="rounded-lg bg-black/50 px-4 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
                 >
                   <option value="price-asc">Price: Low to High</option>
@@ -341,7 +341,10 @@ function Home() {
                     </label>
                     <select
                       value={selectedMake}
-                      onChange={(e) => setSelectedMake(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedMake(e.target.value);
+                        setCurrentPage(1);
+                      }}
                       className="w-full rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
                     >
                       <option value="">All Makes</option>
@@ -364,12 +367,13 @@ function Home() {
                       max="200000"
                       step="5000"
                       value={priceRange.max}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setPriceRange({
                           ...priceRange,
                           max: parseInt(e.target.value),
-                        })
-                      }
+                        });
+                        setCurrentPage(1);
+                      }}
                       className="w-full accent-[#00AEEF]"
                     />
                   </div>
@@ -385,12 +389,13 @@ function Home() {
                       max="1000"
                       step="50"
                       value={horsepowerRange.max}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setHorsepowerRange({
                           ...horsepowerRange,
                           max: parseInt(e.target.value),
-                        })
-                      }
+                        });
+                        setCurrentPage(1);
+                      }}
                       className="w-full accent-[#00AEEF]"
                     />
                   </div>
@@ -406,12 +411,13 @@ function Home() {
                         min="2000"
                         max="2024"
                         value={yearRange.min}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setYearRange({
                             ...yearRange,
                             min: parseInt(e.target.value),
-                          })
-                        }
+                          });
+                          setCurrentPage(1);
+                        }}
                         className="w-1/2 rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
                       />
                       <input
@@ -419,12 +425,13 @@ function Home() {
                         min="2000"
                         max="2024"
                         value={yearRange.max}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setYearRange({
                             ...yearRange,
                             max: parseInt(e.target.value),
-                          })
-                        }
+                          });
+                          setCurrentPage(1);
+                        }}
                         className="w-1/2 rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
                       />
                     </div>
@@ -443,6 +450,7 @@ function Home() {
                       setPriceRange({ min: 0, max: 200000 });
                       setHorsepowerRange({ min: 0, max: 1000 });
                       setYearRange({ min: 2000, max: 2024 });
+                      setCurrentPage(1);
                     }}
                     className="mt-4 text-sm text-[#00AEEF] hover:underline"
                   >
@@ -629,6 +637,7 @@ function Home() {
                   setPriceRange({ min: 0, max: 200000 });
                   setHorsepowerRange({ min: 0, max: 1000 });
                   setYearRange({ min: 2000, max: 2024 });
+                  setCurrentPage(1);
                 }}
                 className="mt-4 rounded-lg bg-[#00AEEF] px-4 py-2 text-black font-medium hover:bg-[#00AEEF]/80"
               >
