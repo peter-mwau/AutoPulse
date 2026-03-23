@@ -27,9 +27,19 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import Hero from "../components/Hero";
 
 function Home() {
   const { cars } = useCars();
+  const homeHeroImages = [
+    "/car1.jpg",
+    "/car2.jpg",
+    "/car3.jpg",
+    "/car4.jpg",
+    "/car5.jpg",
+    "/car6.jpg",
+  ];
+  const [activeHomeHeroImage, setActiveHomeHeroImage] = useState(0);
   const [selectedCar, setSelectedCar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMake, setSelectedMake] = useState("");
@@ -182,6 +192,16 @@ function Home() {
     sortBy,
   ]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveHomeHeroImage(
+        (prevIndex) => (prevIndex + 1) % homeHeroImages.length,
+      );
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [homeHeroImages.length]);
+
   const toggleFavorite = (carId) => {
     setFavorites((prev) =>
       prev.includes(carId)
@@ -200,8 +220,27 @@ function Home() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br pb-5 from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="relative min-h-screen bg-gradient-to-br pb-5 from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24">
+        <section className="pointer-events-none absolute inset-x-0 top-24 h-screen overflow-hidden">
+          {homeHeroImages.map((image, index) => (
+            <div
+              key={image}
+              className={`absolute inset-0 bg-cover bg-center transition-all duration-1800 ease-in-out ${
+                activeHomeHeroImage === index
+                  ? "scale-105 opacity-100"
+                  : "scale-100 opacity-0"
+              }`}
+              style={{ backgroundImage: `url(${image})` }}
+            ></div>
+          ))}
+          <div className="absolute inset-0 bg-black/65"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-[#0B0B0B]"></div>
+        </section>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+          {/* Hero Section */}
+          <Hero />
+
           {/* Header */}
           <div className="mb-12 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm">

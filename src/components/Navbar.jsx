@@ -8,16 +8,11 @@ function Navbar() {
       <div className="flex items-center justify-between rounded-2xl bg-[#0B0B0B]/80 p-2 px-6 shadow-2xl shadow-[#00AEEF]/20 backdrop-blur-xl border border-white/10">
         {/* Logo Area */}
         <div className="flex items-center gap-2">
-          <div className="relative flex h-10 w-10 items-center justify-center">
-            {/* Abstract Logo: Pulse + A */}
-            <div className="absolute h-8 w-8 rotate-45 border-2 border-[#00AEEF]"></div>
-            <span className="relative text-2xl font-black text-white">A</span>
-            <div className="absolute -bottom-1 -right-1 h-2 w-2 rounded-full bg-lime-400 animate-pulse"></div>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            <span className="text-white">Auto</span>
-            <span className="text-[#00AEEF]">Pulse</span>
-          </h1>
+          <img
+            src="/AutoPulse_logo.png"
+            alt="AutoPulse Logo"
+            className="h-16 w-16 rounded-full object-cover"
+          />
         </div>
 
         {/* Navigation Links */}
