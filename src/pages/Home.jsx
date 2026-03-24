@@ -1,205 +1,133 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useCars } from "../contexts/carsContext";
+import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
-  Search,
-  Filter,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  Eye,
   Zap,
+  CheckCircle,
+  Lock,
+  Smartphone,
+  Users,
+  Headphones,
+  ArrowRight,
+  Star,
+  Award,
+  TrendingUp,
+  Shield,
+  Sparkles,
   Gauge,
   Calendar,
   DollarSign,
-  Fuel,
-  Settings,
-  Star,
-  Shield,
   Clock,
+  ThumbsUp,
+  Play,
+  ChevronRight,
+  Globe,
+  Battery,
+  Navigation,
+  Gift,
+  Coffee,
+  Heart,
+  Eye,
+  Share2,
   CreditCard,
-  Info,
-  CheckCircle,
-  Truck,
+  Car,
   MapPin,
   Phone,
-  Mail,
+  Truck,
 } from "lucide-react";
 import Hero from "../components/Hero";
+import { useCars } from "../contexts/carsContext";
+
+// CountUp Animation Component
+const CountUp = ({ end, duration = 2000, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let start = 0;
+          const increment = end / (duration / 16);
+          const timer = setInterval(() => {
+            start += increment;
+            if (start >= end) {
+              setCount(end);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(start));
+            }
+          }, 16);
+          return () => clearInterval(timer);
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (countRef.current) {
+      observer.observe(countRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [end, duration, hasAnimated]);
+
+  return (
+    <span ref={countRef} className="text-4xl md:text-5xl font-bold text-white">
+      {count}
+      {suffix}
+    </span>
+  );
+};
 
 function Home() {
   const { cars } = useCars();
-  const homeHeroImages = [
-    "/car1.jpg",
-    "/car2.jpg",
-    "/car3.jpg",
-    "/car4.jpg",
-    "/car5.jpg",
-    "/car6.jpg",
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [isHoveringCTA, setIsHoveringCTA] = useState(false);
+
+  // Featured cars from API
+  const featuredCars = cars.slice(0, 3);
+
+  // Testimonials data
+  const testimonials = [
+    {
+      name: "Michael Chen",
+      role: "CEO, Luxury Auto Group",
+      content:
+        "AutoPulse transformed our dealership completely. Sales increased by 40% in just 3 months. The platform is intuitive and our customers love it!",
+      rating: 5,
+      avatar: "MC",
+      company: "Luxury Auto Group",
+    },
+    {
+      name: "Sarah Johnson",
+      role: "Car Enthusiast",
+      content:
+        "Best car buying experience ever! The seamless process from browsing to purchase took less than 2 hours. Highly recommended!",
+      rating: 5,
+      avatar: "SJ",
+      company: "Verified Buyer",
+    },
+    {
+      name: "David Rodriguez",
+      role: "Fleet Manager",
+      content:
+        "We manage over 200 vehicles through AutoPulse. The analytics and inventory management features are game-changing for our business.",
+      rating: 5,
+      avatar: "DR",
+      company: "Fleet Solutions Inc",
+    },
   ];
-  const [activeHomeHeroImage, setActiveHomeHeroImage] = useState(0);
-  const [selectedCar, setSelectedCar] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMake, setSelectedMake] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 200000 });
-  const [horsepowerRange, setHorsepowerRange] = useState({ min: 0, max: 1000 });
-  const [yearRange, setYearRange] = useState({ min: 2000, max: 2024 });
-  const [sortBy, setSortBy] = useState("price-asc");
-  const [showFilters, setShowFilters] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
 
-  // Categories based on car types
-  const categories = useMemo(
-    () => [
-      { id: "all", name: "All Vehicles", icon: "🚗", color: "blue" },
-      {
-        id: "luxury",
-        name: "Luxury",
-        icon: "👑",
-        color: "purple",
-        condition: (car) => car.price > 50000,
-      },
-      {
-        id: "sports",
-        name: "Sports",
-        icon: "🏎️",
-        color: "red",
-        condition: (car) => car.horsepower > 300,
-      },
-      {
-        id: "economy",
-        name: "Economy",
-        icon: "💰",
-        color: "green",
-        condition: (car) => car.price < 30000,
-      },
-      {
-        id: "performance",
-        name: "Performance",
-        icon: "⚡",
-        color: "yellow",
-        condition: (car) => car.horsepower > 400,
-      },
-    ],
-    [],
-  );
-
-  // Get unique makes for filter
-  const makes = useMemo(() => {
-    const uniqueMakes = [...new Set(cars.map((car) => car.make))];
-    return uniqueMakes.sort();
-  }, [cars]);
-
-  // Filter and sort cars
-  const filteredCars = useMemo(() => {
-    let filtered = [...cars];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter((car) =>
-        `${car.make} ${car.model}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()),
-      );
-    }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      const category = categories.find((c) => c.id === selectedCategory);
-      if (category && category.condition) {
-        filtered = filtered.filter((car) => category.condition(car));
-      }
-    }
-
-    // Make filter
-    if (selectedMake) {
-      filtered = filtered.filter((car) => car.make === selectedMake);
-    }
-
-    // Price filter
-    filtered = filtered.filter(
-      (car) => car.price >= priceRange.min && car.price <= priceRange.max,
-    );
-
-    // Horsepower filter
-    filtered = filtered.filter(
-      (car) =>
-        car.horsepower >= horsepowerRange.min &&
-        car.horsepower <= horsepowerRange.max,
-    );
-
-    // Year filter
-    filtered = filtered.filter(
-      (car) => car.year >= yearRange.min && car.year <= yearRange.max,
-    );
-
-    // Sorting
-    switch (sortBy) {
-      case "price-asc":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "horsepower-asc":
-        filtered.sort((a, b) => a.horsepower - b.horsepower);
-        break;
-      case "horsepower-desc":
-        filtered.sort((a, b) => b.horsepower - a.horsepower);
-        break;
-      case "year-desc":
-        filtered.sort((a, b) => b.year - a.year);
-        break;
-      case "year-asc":
-        filtered.sort((a, b) => a.year - b.year);
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
-  }, [
-    cars,
-    categories,
-    searchTerm,
-    selectedMake,
-    selectedCategory,
-    priceRange,
-    horsepowerRange,
-    yearRange,
-    sortBy,
-  ]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
-  const paginatedCars = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredCars.slice(startIndex, endIndex);
-  }, [filteredCars, currentPage]);
-
+  // Auto-rotate featured cars
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveHomeHeroImage(
-        (prevIndex) => (prevIndex + 1) % homeHeroImages.length,
-      );
-    }, 4500);
-
-    return () => clearInterval(interval);
-  }, [homeHeroImages.length]);
-
-  const toggleFavorite = (carId) => {
-    setFavorites((prev) =>
-      prev.includes(carId)
-        ? prev.filter((id) => id !== carId)
-        : [...prev, carId],
-    );
-  };
+    if (featuredCars.length > 0) {
+      const interval = setInterval(() => {
+        setFeaturedIndex((prev) => (prev + 1) % featuredCars.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [featuredCars.length]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-US", {
@@ -211,609 +139,468 @@ function Home() {
 
   return (
     <>
-      <div className="relative min-h-screen bg-gradient-to-br pb-5 from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24">
-        <section className="pointer-events-none absolute inset-x-0 top-24 h-screen overflow-hidden">
-          {homeHeroImages.map((image, index) => (
-            <div
-              key={image}
-              className={`absolute inset-0 bg-cover bg-center transition-all duration-1800 ease-in-out ${
-                activeHomeHeroImage === index
-                  ? "scale-105 opacity-100"
-                  : "scale-100 opacity-0"
-              }`}
-              style={{ backgroundImage: `url(${image})` }}
-            ></div>
-          ))}
-          <div className="absolute inset-0 bg-black/65"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-[#0B0B0B]"></div>
-        </section>
+      <div className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-lime-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-[#00AEEF]/10 rounded-full blur-3xl animate-ping"></div>
+        </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
           {/* Hero Section */}
-          <Hero />
-
-          {/* Header */}
-          <div className="mb-12 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm">
-              <Zap className="h-4 w-4 text-lime-500" />
-              <span className="text-xs font-medium text-gray-300">
-                Live Inventory
-              </span>
-              <div className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-400 opacity-75"></span>
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-lime-500"></span>
-              </div>
-            </div>
-            <h2 className="text-4xl font-bold text-white md:text-5xl">
-              Our <span className="text-[#00AEEF]">Showcase</span>
-            </h2>
-            <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
-              Discover our curated collection of premium vehicles. Each car
-              comes with detailed specs and instant purchase options.
-            </p>
+          <div className="sticky top-24 z-0">
+            <Hero />
           </div>
 
-          {/* Categories */}
-          <div className="mb-8 overflow-x-auto">
-            <div className="flex gap-3 pb-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    setCurrentPage(1);
-                  }}
-                  className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
-                    selectedCategory === category.id
-                      ? "bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white shadow-lg shadow-[#00AEEF]/30"
-                      : "border border-white/10 bg-black/40 text-gray-300 hover:border-[#00AEEF]/50 hover:text-white"
-                  }`}
-                >
-                  <span className="text-lg">{category.icon}</span>
-                  <span>{category.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Search and Filter Bar */}
-          <div className="mb-8 space-y-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              {/* Search Input */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Search by make or model..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="w-full rounded-lg bg-black/50 px-10 py-3 text-white placeholder:text-gray-500 border border-white/10 focus:border-[#00AEEF] focus:outline-none focus:ring-1 focus:ring-[#00AEEF] transition-all"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/50 px-4 py-2 text-white transition-all hover:border-[#00AEEF]"
-                >
-                  <Filter className="h-4 w-4" />
-                  <span>Filters</span>
-                  {showFilters ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => {
-                    setSortBy(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-lg bg-black/50 px-4 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
-                >
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="horsepower-desc">
-                    Horsepower: High to Low
-                  </option>
-                  <option value="horsepower-asc">
-                    Horsepower: Low to High
-                  </option>
-                  <option value="year-desc">Newest First</option>
-                  <option value="year-asc">Oldest First</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Expanded Filters */}
-            {showFilters && (
-              <div className="rounded-lg border border-white/10 bg-black/40 p-6 backdrop-blur-sm">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {/* Make Filter */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-300">
-                      Make
-                    </label>
-                    <select
-                      value={selectedMake}
-                      onChange={(e) => {
-                        setSelectedMake(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
-                    >
-                      <option value="">All Makes</option>
-                      {makes.map((make) => (
-                        <option key={make} value={make}>
-                          {make.charAt(0).toUpperCase() + make.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Price Range */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-300">
-                      Max Price: {formatPrice(priceRange.max)}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="200000"
-                      step="5000"
-                      value={priceRange.max}
-                      onChange={(e) => {
-                        setPriceRange({
-                          ...priceRange,
-                          max: parseInt(e.target.value),
-                        });
-                        setCurrentPage(1);
-                      }}
-                      className="w-full accent-[#00AEEF]"
-                    />
-                  </div>
-
-                  {/* Horsepower Range */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-300">
-                      Max Horsepower: {horsepowerRange.max} HP
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1000"
-                      step="50"
-                      value={horsepowerRange.max}
-                      onChange={(e) => {
-                        setHorsepowerRange({
-                          ...horsepowerRange,
-                          max: parseInt(e.target.value),
-                        });
-                        setCurrentPage(1);
-                      }}
-                      className="w-full accent-[#00AEEF]"
-                    />
-                  </div>
-
-                  {/* Year Range */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-300">
-                      Year: {yearRange.min} - {yearRange.max}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        min="2000"
-                        max="2024"
-                        value={yearRange.min}
-                        onChange={(e) => {
-                          setYearRange({
-                            ...yearRange,
-                            min: parseInt(e.target.value),
-                          });
-                          setCurrentPage(1);
-                        }}
-                        className="w-1/2 rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        min="2000"
-                        max="2024"
-                        value={yearRange.max}
-                        onChange={(e) => {
-                          setYearRange({
-                            ...yearRange,
-                            max: parseInt(e.target.value),
-                          });
-                          setCurrentPage(1);
-                        }}
-                        className="w-1/2 rounded-lg bg-black/50 px-3 py-2 text-white border border-white/10 focus:border-[#00AEEF] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clear Filters */}
-                {(selectedMake ||
-                  priceRange.max < 200000 ||
-                  horsepowerRange.max < 1000 ||
-                  yearRange.min > 2000 ||
-                  yearRange.max < 2024) && (
-                  <button
-                    onClick={() => {
-                      setSelectedMake("");
-                      setPriceRange({ min: 0, max: 200000 });
-                      setHorsepowerRange({ min: 0, max: 1000 });
-                      setYearRange({ min: 2000, max: 2024 });
-                      setCurrentPage(1);
-                    }}
-                    className="mt-4 text-sm text-[#00AEEF] hover:underline"
-                  >
-                    Clear all filters
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Results Count */}
-          <div className="mb-6 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="text-[#00AEEF] font-semibold">
-                {paginatedCars.length}
-              </span>{" "}
-              of {filteredCars.length} vehicles
-            </p>
-          </div>
-
-          {/* Car Grid */}
-          {paginatedCars.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {paginatedCars.map((car) => (
+          <div className="relative z-20 -mt-24 -space-y-6 pb-20">
+            {/* Stats Section - Animated Counters */}
+            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  {
+                    label: "Active Listings",
+                    value: cars.length,
+                    suffix: "+",
+                    icon: Car,
+                    color: "blue",
+                    growth: "+23%",
+                  },
+                  {
+                    label: "Happy Customers",
+                    value: 2500,
+                    suffix: "+",
+                    icon: Users,
+                    color: "lime",
+                    growth: "+150%",
+                  },
+                  {
+                    label: "Dealerships",
+                    value: 120,
+                    suffix: "+",
+                    icon: MapPin,
+                    color: "blue",
+                    growth: "+12",
+                  },
+                  {
+                    label: "Avg. Delivery",
+                    value: 48,
+                    suffix: "h",
+                    icon: Clock,
+                    color: "lime",
+                    growth: "Express",
+                  },
+                ].map((stat, idx) => (
                   <div
-                    key={car.id}
-                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-black/80 to-black/40 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                    key={idx}
+                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm p-6 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:scale-105"
+                    style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    {/* Image Container */}
-                    <div className="relative h-48 overflow-hidden bg-black/50">
-                      <img
-                        src={car.img_url}
-                        alt={`${car.make} ${car.model}`}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/400x300?text=No+Image";
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-
-                      {/* Favorite Button */}
-                      <button
-                        onClick={() => toggleFavorite(car.id)}
-                        className="absolute top-3 right-3 rounded-full bg-black/60 p-2 backdrop-blur-sm transition-all hover:scale-110"
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#00AEEF]/0 to-[#00AEEF]/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                    <div className="relative">
+                      <div
+                        className={`mb-3 inline-flex rounded-lg bg-${stat.color === "blue" ? "[#00AEEF]" : "lime-500"}/10 p-2.5`}
                       >
-                        <Heart
-                          className={`h-5 w-5 ${
-                            favorites.includes(car.id)
-                              ? "fill-red-500 text-red-500"
-                              : "text-white"
-                          }`}
+                        <stat.icon
+                          className={`h-5 w-5 text-${stat.color === "blue" ? "[#00AEEF]" : "lime-500"}`}
                         />
-                      </button>
-
-                      {/* Year Badge */}
-                      <div className="absolute top-3 left-3 rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                        {car.year}
                       </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-5">
-                      <div className="mb-2">
-                        <h3 className="text-xl font-bold text-white">
-                          {car.make.charAt(0).toUpperCase() + car.make.slice(1)}{" "}
-                          {car.model.toUpperCase()}
-                        </h3>
-                      </div>
-
-                      {/* Specs */}
-                      <div className="mb-4 flex items-center gap-4 text-sm text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Gauge className="h-4 w-4 text-[#00AEEF]" />
-                          <span>{car.horsepower} HP</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4 text-[#00AEEF]" />
-                          <span>{car.year}</span>
-                        </div>
-                      </div>
-
-                      {/* Price */}
-                      <div className="mb-4 flex items-baseline gap-1">
-                        <DollarSign className="h-4 w-4 text-lime-500" />
-                        <span className="text-2xl font-bold text-white">
-                          {formatPrice(car.price)}
-                        </span>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedCar(car)}
-                          className="flex-1 rounded-lg border border-[#00AEEF] bg-transparent px-4 py-2 text-sm font-medium text-[#00AEEF] transition-all hover:bg-[#00AEEF]/10"
-                        >
-                          Quick View
-                        </button>
-                        <button className="flex-1 rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105">
-                          Buy Now
-                        </button>
+                      <CountUp end={stat.value} suffix={stat.suffix} />
+                      <p className="mt-2 text-sm text-gray-400">{stat.label}</p>
+                      <div className="mt-2 flex items-center gap-1 text-xs text-lime-500">
+                        <TrendingUp className="h-3 w-3" />
+                        <span>{stat.growth}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
+            </section>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-12 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(1, prev - 1))
-                    }
-                    disabled={currentPage === 1}
-                    className="rounded-lg border border-white/10 bg-black/50 p-2 text-white transition-all hover:border-[#00AEEF] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, idx) => {
-                    const pageNum = idx + 1;
-                    if (
-                      pageNum === 1 ||
-                      pageNum === totalPages ||
-                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                    ) {
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`h-10 w-10 rounded-lg font-medium transition-all ${
-                            currentPage === pageNum
-                              ? "bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white"
-                              : "border border-white/10 bg-black/50 text-gray-400 hover:border-[#00AEEF] hover:text-white"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    } else if (
-                      pageNum === currentPage - 2 ||
-                      pageNum === currentPage + 2
-                    ) {
-                      return (
-                        <span key={idx} className="text-gray-500">
-                          ...
-                        </span>
-                      );
-                    }
-                    return null;
-                  })}
-
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="rounded-lg border border-white/10 bg-black/50 p-2 text-white transition-all hover:border-[#00AEEF] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="rounded-full bg-black/50 p-6 mb-4">
-                <Search className="h-12 w-12 text-gray-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                No vehicles found
-              </h3>
-              <p className="text-gray-400">
-                Try adjusting your filters or search terms
-              </p>
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedMake("");
-                  setSelectedCategory("all");
-                  setPriceRange({ min: 0, max: 200000 });
-                  setHorsepowerRange({ min: 0, max: 1000 });
-                  setYearRange({ min: 2000, max: 2024 });
-                  setCurrentPage(1);
-                }}
-                className="mt-4 rounded-lg bg-[#00AEEF] px-4 py-2 text-black font-medium hover:bg-[#00AEEF]/80"
-              >
-                Clear all filters
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Car Details Modal */}
-      {selectedCar && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-          onClick={() => setSelectedCar(null)}
-        >
-          <div
-            className="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-br from-[#0B0B0B] to-[#050505] border border-white/10 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedCar(null)}
-              className="absolute top-4 right-4 z-10 rounded-full bg-black/60 p-2 backdrop-blur-sm text-white hover:bg-black/80 transition-all"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="p-6 md:p-8">
-              {/* Image */}
-              <div className="relative h-64 md:h-96 rounded-xl overflow-hidden mb-6">
-                <img
-                  src={selectedCar.img_url}
-                  alt={`${selectedCar.make} ${selectedCar.model}`}
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/800x400?text=No+Image";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <div className="absolute bottom-4 left-4">
-                  <h2 className="text-3xl font-bold text-white">
-                    {selectedCar.make.charAt(0).toUpperCase() +
-                      selectedCar.make.slice(1)}{" "}
-                    {selectedCar.model.toUpperCase()}
+            {/* Featured Cars Section - Interactive Carousel */}
+            {featuredCars.length > 0 && (
+              <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+                <div className="text-center mb-12">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
+                    <Sparkles className="h-4 w-4 text-lime-500" />
+                    <span className="text-xs font-medium text-gray-300">
+                      Featured Vehicles
+                    </span>
+                  </div>
+                  <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
+                    Editor's <span className="text-[#00AEEF]">Picks</span>
                   </h2>
-                  <p className="text-gray-300">{selectedCar.year}</p>
+                  <p className="text-gray-400 max-w-2xl mx-auto">
+                    Discover our hand-picked selection of exceptional vehicles
+                  </p>
                 </div>
+
+                <div className="relative">
+                  {/* Main Featured Car */}
+                  {featuredCars[featuredIndex] && (
+                    <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 transition-all duration-700 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
+                        <div className="relative h-64 lg:h-auto rounded-2xl overflow-hidden">
+                          <img
+                            src={featuredCars[featuredIndex].img_url}
+                            alt={`${featuredCars[featuredIndex].make} ${featuredCars[featuredIndex].model}`}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://via.placeholder.com/600x400?text=Featured+Vehicle";
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                          <div className="absolute bottom-4 left-4 flex gap-2">
+                            <span className="rounded-full bg-lime-500 px-3 py-1 text-xs font-semibold text-black">
+                              Featured
+                            </span>
+                            <span className="rounded-full bg-[#00AEEF] px-3 py-1 text-xs font-semibold text-white">
+                              Hot Deal
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-center">
+                          <h3 className="text-3xl font-bold text-white mb-2">
+                            {featuredCars[featuredIndex].make
+                              .charAt(0)
+                              .toUpperCase() +
+                              featuredCars[featuredIndex].make.slice(1)}{" "}
+                            {featuredCars[featuredIndex].model.toUpperCase()}
+                          </h3>
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <Calendar className="h-4 w-4 text-[#00AEEF]" />
+                              <span className="text-sm">
+                                {featuredCars[featuredIndex].year}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <Gauge className="h-4 w-4 text-[#00AEEF]" />
+                              <span className="text-sm">
+                                {featuredCars[featuredIndex].horsepower} HP
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 mb-4">
+                            Experience unparalleled performance and luxury with
+                            this exceptional vehicle. Equipped with the latest
+                            technology and premium features.
+                          </p>
+                          <div className="mb-6">
+                            <p className="text-3xl font-bold text-white">
+                              {formatPrice(featuredCars[featuredIndex].price)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              or{" "}
+                              {formatPrice(
+                                featuredCars[featuredIndex].price / 60,
+                              )}
+                              /mo
+                            </p>
+                          </div>
+                          <div className="flex gap-3">
+                            <Link
+                              to={`/listings/${featuredCars[featuredIndex].id}`}
+                              className="flex-1 text-center rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-6 py-3 font-semibold text-white transition-all hover:scale-105"
+                            >
+                              View Details
+                            </Link>
+                            <button className="rounded-lg border border-white/20 px-6 py-3 text-white transition-all hover:border-[#00AEEF] hover:text-[#00AEEF]">
+                              <Heart className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Carousel Indicators */}
+                  <div className="flex justify-center gap-2 mt-6">
+                    {featuredCars.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setFeaturedIndex(idx)}
+                        className={`h-2 rounded-full transition-all ${
+                          featuredIndex === idx
+                            ? "w-8 bg-[#00AEEF]"
+                            : "w-2 bg-gray-600 hover:bg-gray-500"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Features Section with Hover Effects */}
+            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
+                  <Zap className="h-4 w-4 text-lime-500" />
+                  <span className="text-xs font-medium text-gray-300">
+                    Why Choose Us
+                  </span>
+                </div>
+                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
+                  The <span className="text-[#00AEEF]">AutoPulse</span>{" "}
+                  Advantage
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto">
+                  Experience automotive shopping like never before
+                </p>
               </div>
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column - Specs */}
-                <div className="space-y-6">
-                  <h3 className="text-xl font-bold text-white border-b border-white/10 pb-2">
-                    Specifications
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-lg bg-black/50 p-4 border border-white/10">
-                      <Gauge className="h-5 w-5 text-[#00AEEF] mb-2" />
-                      <p className="text-sm text-gray-400">Horsepower</p>
-                      <p className="text-xl font-bold text-white">
-                        {selectedCar.horsepower} HP
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                  {
+                    icon: Zap,
+                    title: "Lightning Fast",
+                    description:
+                      "Browse our extensive inventory with blazing fast search and filtering capabilities",
+                    color: "blue",
+                    delay: 0,
+                  },
+                  {
+                    icon: Shield,
+                    title: "Secure & Verified",
+                    description:
+                      "All vehicles are certified and verified by our expert team for your peace of mind",
+                    color: "lime",
+                    delay: 100,
+                  },
+                  {
+                    icon: Smartphone,
+                    title: "Mobile Ready",
+                    description:
+                      "Shop anytime, anywhere with our fully responsive mobile application",
+                    color: "blue",
+                    delay: 200,
+                  },
+                  {
+                    icon: Users,
+                    title: "Expert Support",
+                    description:
+                      "Our dedicated team is available 24/7 to help you find your perfect vehicle",
+                    color: "lime",
+                    delay: 300,
+                  },
+                  {
+                    icon: Headphones,
+                    title: "Customer First",
+                    description:
+                      "We prioritize your satisfaction with hassle-free transactions and support",
+                    color: "blue",
+                    delay: 400,
+                  },
+                  {
+                    icon: Award,
+                    title: "Verified Listings",
+                    description:
+                      "Every listing is authentic with complete vehicle history and documentation",
+                    color: "lime",
+                    delay: 500,
+                  },
+                ].map((feature, idx) => (
+                  <div
+                    key={idx}
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 p-8 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:-translate-y-2"
+                    style={{ animationDelay: `${feature.delay}ms` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#00AEEF]/0 to-[#00AEEF]/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                    <div className="relative">
+                      <div
+                        className={`rounded-lg bg-${feature.color === "blue" ? "[#00AEEF]" : "lime-500"}/10 w-14 h-14 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <feature.icon
+                          className={`h-7 w-7 text-${feature.color === "blue" ? "[#00AEEF]" : "lime-500"}`}
+                        />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#00AEEF] transition-colors">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-400 leading-relaxed">
+                        {feature.description}
                       </p>
-                    </div>
-                    <div className="rounded-lg bg-black/50 p-4 border border-white/10">
-                      <Calendar className="h-5 w-5 text-[#00AEEF] mb-2" />
-                      <p className="text-sm text-gray-400">Year</p>
-                      <p className="text-xl font-bold text-white">
-                        {selectedCar.year}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-black/50 p-4 border border-white/10">
-                      <Fuel className="h-5 w-5 text-[#00AEEF] mb-2" />
-                      <p className="text-sm text-gray-400">Fuel Type</p>
-                      <p className="text-xl font-bold text-white">
-                        Premium Gasoline
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-black/50 p-4 border border-white/10">
-                      <Settings className="h-5 w-5 text-[#00AEEF] mb-2" />
-                      <p className="text-sm text-gray-400">Transmission</p>
-                      <p className="text-xl font-bold text-white">Automatic</p>
+                      <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-sm text-[#00AEEF] inline-flex items-center gap-1">
+                          Learn more <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            </section>
 
-                  <div>
-                    <h3 className="text-xl font-bold text-white border-b border-white/10 pb-2 mb-4">
-                      Features
-                    </h3>
-                    <ul className="grid grid-cols-2 gap-2">
-                      {[
-                        "Leather Seats",
-                        "Navigation System",
-                        "Bluetooth Connectivity",
-                        "Backup Camera",
-                        "Keyless Entry",
-                        "Premium Audio",
-                      ].map((feature, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-center gap-2 text-gray-300"
-                        >
-                          <CheckCircle className="h-4 w-4 text-lime-500" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+            {/* How It Works Section */}
+            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
+                  <Play className="h-4 w-4 text-lime-500" />
+                  <span className="text-xs font-medium text-gray-300">
+                    Simple Process
+                  </span>
                 </div>
+                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
+                  How <span className="text-[#00AEEF]">AutoPulse</span> Works
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto">
+                  Get your dream car in three simple steps
+                </p>
+              </div>
 
-                {/* Right Column - Purchase */}
-                <div className="space-y-6">
-                  <div className="rounded-xl bg-gradient-to-r from-[#00AEEF]/10 to-transparent p-6 border border-[#00AEEF]/30">
-                    <p className="text-sm text-gray-400 mb-2">Starting from</p>
-                    <p className="text-4xl font-bold text-white mb-4">
-                      {formatPrice(selectedCar.price)}
-                    </p>
-                    <button className="w-full rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-6 py-3 font-bold text-white transition-all hover:scale-105 mb-3">
-                      Purchase Now
-                    </button>
-                    <button className="w-full rounded-lg border border-[#00AEEF] bg-transparent px-6 py-3 font-medium text-[#00AEEF] transition-all hover:bg-[#00AEEF]/10">
-                      Schedule Test Drive
-                    </button>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-bold text-white border-b border-white/10 pb-2 mb-4">
-                      Financing Options
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 rounded-lg bg-black/30">
-                        <span className="text-gray-400">
-                          Monthly Payment Estimate
-                        </span>
-                        <span className="text-white font-bold">
-                          {formatPrice(selectedCar.price / 60)}/mo*
-                        </span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  {
+                    step: "01",
+                    icon: Eye,
+                    title: "Browse & Filter",
+                    description:
+                      "Explore our extensive collection with advanced filters",
+                    color: "blue",
+                  },
+                  {
+                    step: "02",
+                    icon: CreditCard,
+                    title: "Secure Payment",
+                    description:
+                      "Complete your purchase with our secure payment system",
+                    color: "lime",
+                  },
+                  {
+                    step: "03",
+                    icon: Truck,
+                    title: "Fast Delivery",
+                    description: "Get your vehicle delivered within 48 hours",
+                    color: "blue",
+                  },
+                ].map((step, idx) => (
+                  <div key={idx} className="relative group">
+                    {idx < 2 && (
+                      <div className="hidden md:block absolute top-1/2 left-full w-full h-0.5 bg-gradient-to-r from-[#00AEEF] to-lime-500 -translate-y-1/2 z-0"></div>
+                    )}
+                    <div className="relative text-center p-8 rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 group-hover:border-[#00AEEF]/50 transition-all duration-500 group-hover:scale-105">
+                      <div className="text-6xl font-bold text-[#00AEEF]/20 mb-4 group-hover:text-[#00AEEF]/30 transition-colors">
+                        {step.step}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        *Based on 60-month financing at 4.5% APR. Terms and
-                        conditions apply.
+                      <div className="rounded-full bg-gradient-to-r from-[#00AEEF]/20 to-lime-500/20 w-20 h-20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <step.icon className="h-10 w-10 text-[#00AEEF]" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-3">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-400">{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
+                  <Star className="h-4 w-4 text-lime-500" />
+                  <span className="text-xs font-medium text-gray-300">
+                    Testimonials
+                  </span>
+                </div>
+                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
+                  What Our <span className="text-[#00AEEF]">Customers</span> Say
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto">
+                  Join thousands of satisfied customers who found their dream
+                  car with AutoPulse
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, idx) => (
+                  <div
+                    key={idx}
+                    className="group relative rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 p-8 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:-translate-y-2"
+                  >
+                    <div className="absolute top-4 right-4 text-[#00AEEF]/20 group-hover:text-[#00AEEF]/30 transition-colors">
+                      <svg
+                        className="h-8 w-8"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                      </svg>
+                    </div>
+                    <div className="relative">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00AEEF] to-lime-500 flex items-center justify-center text-white font-bold">
+                          {testimonial.avatar}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white">
+                            {testimonial.name}
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            {testimonial.role}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-0.5 mb-4">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 fill-lime-500 text-lime-500"
+                          />
+                        ))}
+                      </div>
+                      <p className="text-gray-300 leading-relaxed">
+                        {testimonial.content}
+                      </p>
+                      <p className="mt-4 text-xs text-[#00AEEF]">
+                        {testimonial.company}
                       </p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </section>
 
-                  <div>
-                    <h3 className="text-xl font-bold text-white border-b border-white/10 pb-2 mb-4">
-                      Dealer Information
-                    </h3>
-                    <div className="space-y-2 text-gray-300">
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-[#00AEEF]" />
-                        <span className="text-sm">
-                          AutoPulse Certified Dealership
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-[#00AEEF]" />
-                        <span className="text-sm">
-                          123 Innovation Drive, Silicon Valley, CA
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-[#00AEEF]" />
-                        <span className="text-sm">+1 (555) 123-4567</span>
-                      </div>
-                    </div>
-                  </div>
+            {/* CTA Section - Animated */}
+            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
+              <div
+                className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#00AEEF]/20 to-[#0077b3]/20 border border-[#00AEEF]/30 p-12 transition-all duration-500 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                onMouseEnter={() => setIsHoveringCTA(true)}
+                onMouseLeave={() => setIsHoveringCTA(false)}
+              >
+                <div
+                  className={`absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2300AEEF" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50`}
+                ></div>
+                <div className="relative text-center">
+                  <h2 className="text-4xl font-bold text-white mb-4">
+                    Ready to Find Your Dream Car?
+                  </h2>
+                  <p className="text-gray-300 max-w-2xl mx-auto mb-8">
+                    Join thousands of satisfied customers who found their
+                    perfect vehicle with AutoPulse
+                  </p>
+                  <Link
+                    to="/listings"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00AEEF]/50 group"
+                  >
+                    <span>Browse Listings</span>
+                    <ArrowRight
+                      className={`h-5 w-5 transition-transform duration-300 ${isHoveringCTA ? "translate-x-1" : ""}`}
+                    />
+                  </Link>
+                  <p className="mt-6 text-xs text-gray-500">
+                    ⚡ Over 2,500+ cars sold • 🎉 98% customer satisfaction
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }
