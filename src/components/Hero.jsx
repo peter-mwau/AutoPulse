@@ -26,7 +26,7 @@ function Hero() {
       setCurrentImage((prev) => (prev + 1) % images.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
 
   return (
     <div className="relative h-screen overflow-hidden">
