@@ -68,24 +68,23 @@ function Navbar() {
             </li>
             <li>
               <NavLink to="/listings" className={getNavClassName}>
-                Showcase
+                Inventory
               </NavLink>
             </li>
             <li>
-              <a
-                href="#"
-                className="relative text-sm font-medium text-gray-300 transition-colors hover:text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#00AEEF] after:transition-all after:duration-300 hover:after:w-full"
-              >
-                Solutions
-              </a>
+              <NavLink to="/financing" className={getNavClassName}>
+                Financing
+              </NavLink>
             </li>
             <li>
-              <a
-                href="#"
-                className="relative text-sm font-medium text-gray-300 transition-colors hover:text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#00AEEF] after:transition-all after:duration-300 hover:after:w-full"
-              >
+              <NavLink to="/trade-in" className={getNavClassName}>
+                Trade-In
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/contact" className={getNavClassName}>
                 Contact
-              </a>
+              </NavLink>
             </li>
           </ul>
         </nav>
@@ -118,7 +117,7 @@ function Navbar() {
           </button>
 
           {/* CTA Button */}
-          <button className="hidden md:inline-flex group relative overflow-hidden rounded-full bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[#00AEEF]/50">
+          <button className="hidden md:inline-flex group relative overflow-hidden rounded-full bg-linear-to-r from-[#00AEEF] to-[#0077b3] px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[#00AEEF]/50">
             <span className="relative z-10">Request Demo</span>
             <div className="absolute inset-0 -translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0"></div>
           </button>
@@ -157,32 +156,59 @@ function Navbar() {
                   }`
                 }
               >
-                Showcase
+                Inventory
               </NavLink>
             </li>
             <li>
-              <a
-                href="#"
+              <NavLink
+                to="/financing"
                 onClick={closeMobileMenu}
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                className={({ isActive }) =>
+                  `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#00AEEF]/20 text-white"
+                      : "text-gray-300 hover:bg-white/5 hover:text-white"
+                  }`
+                }
               >
-                Solutions
-              </a>
+                Financing
+              </NavLink>
             </li>
             <li>
-              <a
-                href="#"
+              <NavLink
+                to="/trade-in"
                 onClick={closeMobileMenu}
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                className={({ isActive }) =>
+                  `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#00AEEF]/20 text-white"
+                      : "text-gray-300 hover:bg-white/5 hover:text-white"
+                  }`
+                }
+              >
+                Trade-In
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/contact"
+                onClick={closeMobileMenu}
+                className={({ isActive }) =>
+                  `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#00AEEF]/20 text-white"
+                      : "text-gray-300 hover:bg-white/5 hover:text-white"
+                  }`
+                }
               >
                 Contact
-              </a>
+              </NavLink>
             </li>
           </ul>
 
           <button
             onClick={closeMobileMenu}
-            className="mt-4 w-full rounded-full bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-[#00AEEF]/50"
+            className="mt-4 w-full rounded-full bg-linear-to-r from-[#00AEEF] to-[#0077b3] px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-[#00AEEF]/50"
           >
             Request Demo
           </button>
