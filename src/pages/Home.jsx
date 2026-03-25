@@ -158,7 +158,7 @@ const AnimatedCounter = ({ value, suffix = "" }) => {
 const SectionHeader = ({ badge, title, gradientText, description }) => (
   <div className="text-center mb-12">
     <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1.5 backdrop-blur-sm mb-4">
-      <Icon className="h-4 w-4 text-lime-500" />
+      <Sparkles className="h-4 w-4 text-lime-500" />
       <span className="text-xs font-medium text-[#00AEEF] tracking-wide">
         {badge}
       </span>
@@ -181,7 +181,7 @@ const FeatureCard = ({ title, description, color = "blue" }) => (
         color === "blue" ? "bg-[#00AEEF]/10" : "bg-lime-500/10"
       }`}
     >
-      <Icon
+      <Zap
         className={`h-6 w-6 ${
           color === "blue" ? "text-[#00AEEF]" : "text-lime-500"
         }`}
