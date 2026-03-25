@@ -497,7 +497,7 @@ function Contact() {
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Silicon+Valley+CA&center=37.3875,-122.0575&zoom=12"
+                src="https://www.google.com/maps?q=Silicon+Valley+CA&output=embed"
               />
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 to-transparent" />
             </div>

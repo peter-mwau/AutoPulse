@@ -8,31 +8,31 @@ import {
   Sparkles,
 } from "lucide-react";
 
+const HERO_IMAGES = [
+  "/car1.jpg",
+  "/car2.jpg",
+  "/car3.jpg",
+  "/car4.jpg",
+  "/car5.jpg",
+  "/car6.jpg",
+];
+
 function Hero() {
   const [currentImage, setCurrentImage] = useState(0);
-
-  const images = [
-    "/car1.jpg",
-    "/car2.jpg",
-    "/car3.jpg",
-    "/car4.jpg",
-    "/car5.jpg",
-    "/car6.jpg",
-  ];
 
   // Auto-rotate background images
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
+      setCurrentImage((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, []);
 
   return (
     <div className="relative h-screen overflow-hidden">
       {/* Background Slideshow */}
       <div className="absolute inset-0">
-        {images.map((image, index) => (
+        {HERO_IMAGES.map((image, index) => (
           <div
             key={image}
             className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, Moon, Sun, X } from "lucide-react";
-import { useDarkMode } from "../contexts/themeContext";
+import ThemeContext from "../contexts/themeContext";
 
 function Navbar() {
-  const { darkMode, toggleTheme } = useDarkMode();
+  const { darkMode, toggleTheme } = useContext(ThemeContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navbarRef = useRef(null);
 
