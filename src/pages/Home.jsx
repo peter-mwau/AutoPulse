@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Zap,
-  CheckCircle,
+  Eye,
   Lock,
   Smartphone,
   Users,
@@ -17,109 +17,227 @@ import {
   Calendar,
   DollarSign,
   Clock,
-  ThumbsUp,
   Play,
-  ChevronRight,
-  Globe,
-  Battery,
-  Navigation,
-  Gift,
-  Coffee,
   Heart,
-  Eye,
-  Share2,
   CreditCard,
   Car,
   MapPin,
-  Phone,
   Truck,
+  Cpu,
+  Network,
+  Binary,
+  Rocket,
+  CheckCircle,
 } from "lucide-react";
 import Hero from "../components/Hero";
 import { useCars } from "../contexts/carsContext";
 
-// CountUp Animation Component
-const CountUp = ({ end, duration = 2000, suffix = "" }) => {
-  const [count, setCount] = useState(0);
-  const countRef = useRef(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
+// Simple particle background
+const ParticleBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationId;
+    let particles = [];
+
+    const setSize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    const createParticle = () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 1.5,
+      speedX: (Math.random() - 0.5) * 0.2,
+      speedY: (Math.random() - 0.5) * 0.2,
+      color: `rgba(0, 174, 239, ${Math.random() * 0.15})`,
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.y < 0) this.y = canvas.height;
+        if (this.y > canvas.height) this.y = 0;
+      },
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      },
+    });
+
+    for (let i = 0; i < 80; i++) {
+      particles.push(createParticle());
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+      animationId = requestAnimationFrame(animate);
+    };
+
+    setSize();
+    animate();
+    window.addEventListener("resize", setSize);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", setSize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none opacity-30"
+      style={{ zIndex: 0 }}
+    />
+  );
+};
+
+// Simple scroll reveal hook
+const useScrollReveal = () => {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          let start = 0;
-          const increment = end / (duration / 16);
-          const timer = setInterval(() => {
-            start += increment;
-            if (start >= end) {
-              setCount(end);
-              clearInterval(timer);
-            } else {
-              setCount(Math.floor(start));
-            }
-          }, 16);
-          return () => clearInterval(timer);
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.5 },
+      { threshold: 0.1 },
     );
 
-    if (countRef.current) {
-      observer.observe(countRef.current);
-    }
-
+    if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [end, duration, hasAnimated]);
+  }, []);
+
+  return [ref, isVisible];
+};
+
+// Animated Counter
+const AnimatedCounter = ({ value, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const [ref, isVisible] = useScrollReveal();
+
+  useEffect(() => {
+    if (isVisible) {
+      let start = 0;
+      const duration = 2000;
+      const increment = value / (duration / 16);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= value) {
+          setCount(value);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 16);
+      return () => clearInterval(timer);
+    }
+  }, [isVisible, value]);
 
   return (
-    <span ref={countRef} className="text-4xl md:text-5xl font-bold text-white">
+    <span ref={ref} className="text-4xl md:text-5xl font-bold text-white">
       {count}
       {suffix}
     </span>
   );
 };
 
+// Section Header
+const SectionHeader = ({
+  icon: Icon,
+  badge,
+  title,
+  gradientText,
+  description,
+}) => (
+  <div className="text-center mb-12">
+    <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1.5 backdrop-blur-sm mb-4">
+      <Icon className="h-4 w-4 text-lime-500" />
+      <span className="text-xs font-medium text-[#00AEEF] tracking-wide">
+        {badge}
+      </span>
+    </div>
+    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+      {title}{" "}
+      <span className="bg-gradient-to-r from-[#00AEEF] to-lime-400 bg-clip-text text-transparent">
+        {gradientText}
+      </span>
+    </h2>
+    <p className="text-gray-400 max-w-2xl mx-auto">{description}</p>
+  </div>
+);
+
+// Feature Card
+const FeatureCard = ({ icon: Icon, title, description, color = "blue" }) => (
+  <div className="group rounded-2xl border border-white/10 bg-black/45 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-lg hover:shadow-[#00AEEF]/10">
+    <div
+      className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${
+        color === "blue" ? "bg-[#00AEEF]/10" : "bg-lime-500/10"
+      }`}
+    >
+      <Icon
+        className={`h-6 w-6 ${
+          color === "blue" ? "text-[#00AEEF]" : "text-lime-500"
+        }`}
+      />
+    </div>
+    <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+    <p className="text-sm text-gray-400">{description}</p>
+  </div>
+);
+
 function Home() {
   const { cars } = useCars();
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [isHoveringCTA, setIsHoveringCTA] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Featured cars from API
-  const featuredCars = cars.slice(0, 3);
+  console.log("Cars: ", cars);
 
-  // Testimonials data
+  const featuredCars = cars
+    .filter((car) => car.horsepower > 450 && car.horsepower < 500)
+    .slice(0, 5);
+  const [revealedRef, isRevealed] = useScrollReveal();
+
   const testimonials = [
     {
       name: "Michael Chen",
       role: "CEO, Luxury Auto Group",
       content:
-        "AutoPulse transformed our dealership completely. Sales increased by 40% in just 3 months. The platform is intuitive and our customers love it!",
+        "AutoPulse transformed our dealership completely. Sales increased by 40% in just 3 months.",
       rating: 5,
       avatar: "MC",
-      company: "Luxury Auto Group",
     },
     {
       name: "Sarah Johnson",
       role: "Car Enthusiast",
       content:
-        "Best car buying experience ever! The seamless process from browsing to purchase took less than 2 hours. Highly recommended!",
+        "Best car buying experience ever! The seamless process from browsing to purchase took less than 2 hours.",
       rating: 5,
       avatar: "SJ",
-      company: "Verified Buyer",
     },
     {
       name: "David Rodriguez",
       role: "Fleet Manager",
       content:
-        "We manage over 200 vehicles through AutoPulse. The analytics and inventory management features are game-changing for our business.",
+        "We manage over 200 vehicles through AutoPulse. The analytics features are game-changing.",
       rating: 5,
       avatar: "DR",
-      company: "Fleet Solutions Inc",
     },
   ];
 
-  // Auto-rotate featured cars
   useEffect(() => {
     if (featuredCars.length > 0) {
       const interval = setInterval(() => {
@@ -128,6 +246,17 @@ function Home() {
       return () => clearInterval(interval);
     }
   }, [featuredCars.length]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const progress =
+        window.scrollY /
+        (document.documentElement.scrollHeight - window.innerHeight);
+      setScrollProgress(progress);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-US", {
@@ -138,138 +267,110 @@ function Home() {
   };
 
   return (
-    <>
-      <div className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24 overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-lime-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-[#00AEEF]/10 rounded-full blur-3xl animate-ping"></div>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505]">
+      <ParticleBackground />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="sticky top-24 z-0">
-            <Hero />
-          </div>
+      <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00AEEF] to-transparent" />
 
-          <div className="relative z-20 -mt-24 -space-y-6 pb-20">
-            {/* Stats Section - Animated Counters */}
-            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  {
-                    label: "Active Listings",
-                    value: cars.length,
-                    suffix: "+",
-                    icon: Car,
-                    color: "blue",
-                    growth: "+23%",
-                  },
-                  {
-                    label: "Happy Customers",
-                    value: 2500,
-                    suffix: "+",
-                    icon: Users,
-                    color: "lime",
-                    growth: "+150%",
-                  },
-                  {
-                    label: "Dealerships",
-                    value: 120,
-                    suffix: "+",
-                    icon: MapPin,
-                    color: "blue",
-                    growth: "+12",
-                  },
-                  {
-                    label: "Avg. Delivery",
-                    value: 48,
-                    suffix: "h",
-                    icon: Clock,
-                    color: "lime",
-                    growth: "Express",
-                  },
-                ].map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm p-6 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:scale-105"
-                    style={{ animationDelay: `${idx * 100}ms` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#00AEEF]/0 to-[#00AEEF]/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
-                    <div className="relative">
-                      <div
-                        className={`mb-3 inline-flex rounded-lg bg-${stat.color === "blue" ? "[#00AEEF]" : "lime-500"}/10 p-2.5`}
-                      >
-                        <stat.icon
-                          className={`h-5 w-5 text-${stat.color === "blue" ? "[#00AEEF]" : "lime-500"}`}
-                        />
-                      </div>
-                      <CountUp end={stat.value} suffix={stat.suffix} />
-                      <p className="mt-2 text-sm text-gray-400">{stat.label}</p>
-                      <div className="mt-2 flex items-center gap-1 text-xs text-lime-500">
-                        <TrendingUp className="h-3 w-3" />
-                        <span>{stat.growth}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+      {/* Scroll Progress */}
+      <div
+        className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-gradient-to-r from-[#00AEEF] via-lime-500 to-[#00AEEF] transition-all duration-300"
+        style={{ width: `${scrollProgress * 100}%` }}
+      />
 
-            {/* Featured Cars Section - Interactive Carousel */}
-            {featuredCars.length > 0 && (
-              <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-                <div className="text-center mb-12">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
-                    <Sparkles className="h-4 w-4 text-lime-500" />
-                    <span className="text-xs font-medium text-gray-300">
-                      Featured Vehicles
-                    </span>
-                  </div>
-                  <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
-                    Editor's <span className="text-[#00AEEF]">Picks</span>
-                  </h2>
-                  <p className="text-gray-400 max-w-2xl mx-auto">
-                    Discover our hand-picked selection of exceptional vehicles
-                  </p>
+      <div className="relative">
+        {/* Hero */}
+        <Hero />
+
+        {/* Content Sections */}
+        <div className="relative z-10 pb-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 space-y-20">
+            {/* Stats Section */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-20">
+              {[
+                {
+                  label: "Active Listings",
+                  value: cars.length,
+                  suffix: "+",
+                  icon: Car,
+                  growth: "+23%",
+                },
+                {
+                  label: "Happy Customers",
+                  value: 2500,
+                  suffix: "+",
+                  icon: Users,
+                  growth: "+150%",
+                },
+                {
+                  label: "Partner Dealers",
+                  value: 120,
+                  suffix: "+",
+                  icon: MapPin,
+                  growth: "+12",
+                },
+                {
+                  label: "Avg. Delivery",
+                  value: 48,
+                  suffix: "h",
+                  icon: Clock,
+                  growth: "Express",
+                },
+              ].map((stat, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-white/10 bg-black/45 p-6 text-center backdrop-blur-sm transition-all hover:border-[#00AEEF]/40 hover:shadow-lg hover:shadow-[#00AEEF]/10"
+                >
+                  <stat.icon className="h-8 w-8 mx-auto mb-3 text-[#00AEEF]" />
+                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                  <p className="text-sm text-gray-400 mt-2">{stat.label}</p>
+                  <p className="text-xs text-lime-500 mt-1">{stat.growth}</p>
                 </div>
+              ))}
+            </div>
+
+            {/* Featured Cars */}
+            {featuredCars.length > 0 && (
+              <div>
+                <SectionHeader
+                  icon={Sparkles}
+                  badge="EXCLUSIVE SELECTION"
+                  title="Editor's"
+                  gradientText="Picks"
+                  description="Hand-picked vehicles from our premium collection"
+                />
 
                 <div className="relative">
-                  {/* Main Featured Car */}
                   {featuredCars[featuredIndex] && (
-                    <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 transition-all duration-700 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-                        <div className="relative h-64 lg:h-auto rounded-2xl overflow-hidden">
+                    <div className="group overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-black/70 to-black/45 backdrop-blur-sm shadow-lg shadow-[#00AEEF]/10">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+                        <div className="relative h-64 lg:h-96 rounded-2xl overflow-hidden">
                           <img
                             src={featuredCars[featuredIndex].img_url}
-                            alt={`${featuredCars[featuredIndex].make} ${featuredCars[featuredIndex].model}`}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            alt="Featured car"
+                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                             onError={(e) => {
                               e.target.src =
-                                "https://via.placeholder.com/600x400?text=Featured+Vehicle";
+                                "https://via.placeholder.com/600x400?text=Vehicle";
                             }}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           <div className="absolute bottom-4 left-4 flex gap-2">
-                            <span className="rounded-full bg-lime-500 px-3 py-1 text-xs font-semibold text-black">
+                            <span className="px-3 py-1 bg-lime-500 text-black text-xs font-semibold rounded-full">
                               Featured
                             </span>
-                            <span className="rounded-full bg-[#00AEEF] px-3 py-1 text-xs font-semibold text-white">
-                              Hot Deal
+                            <span className="px-3 py-1 bg-[#00AEEF] text-white text-xs font-semibold rounded-full">
+                              Limited
                             </span>
                           </div>
                         </div>
 
                         <div className="flex flex-col justify-center">
-                          <h3 className="text-3xl font-bold text-white mb-2">
-                            {featuredCars[featuredIndex].make
-                              .charAt(0)
-                              .toUpperCase() +
-                              featuredCars[featuredIndex].make.slice(1)}{" "}
+                          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                            {featuredCars[featuredIndex].make.toUpperCase()}{" "}
                             {featuredCars[featuredIndex].model.toUpperCase()}
                           </h3>
-                          <div className="flex items-center gap-4 mb-4">
+                          <div className="flex gap-4 mb-4">
                             <div className="flex items-center gap-1 text-gray-400">
                               <Calendar className="h-4 w-4 text-[#00AEEF]" />
                               <span className="text-sm">
@@ -283,10 +384,9 @@ function Home() {
                               </span>
                             </div>
                           </div>
-                          <p className="text-gray-300 mb-4">
-                            Experience unparalleled performance and luxury with
-                            this exceptional vehicle. Equipped with the latest
-                            technology and premium features.
+                          <p className="text-gray-300 mb-6">
+                            Experience unparalleled performance with this
+                            exceptional vehicle.
                           </p>
                           <div className="mb-6">
                             <p className="text-3xl font-bold text-white">
@@ -303,11 +403,11 @@ function Home() {
                           <div className="flex gap-3">
                             <Link
                               to={`/listings/${featuredCars[featuredIndex].id}`}
-                              className="flex-1 text-center rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-6 py-3 font-semibold text-white transition-all hover:scale-105"
+                              className="flex-1 text-center px-6 py-3 bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white font-semibold rounded-lg hover:scale-105 transition-transform"
                             >
                               View Details
                             </Link>
-                            <button className="rounded-lg border border-white/20 px-6 py-3 text-white transition-all hover:border-[#00AEEF] hover:text-[#00AEEF]">
+                            <button className="px-6 py-3 border border-white/20 rounded-lg hover:border-[#00AEEF] hover:text-[#00AEEF] transition-colors">
                               <Heart className="h-5 w-5" />
                             </button>
                           </div>
@@ -316,292 +416,204 @@ function Home() {
                     </div>
                   )}
 
-                  {/* Carousel Indicators */}
                   <div className="flex justify-center gap-2 mt-6">
                     {featuredCars.map((_, idx) => (
                       <button
                         key={idx}
                         onClick={() => setFeaturedIndex(idx)}
-                        className={`h-2 rounded-full transition-all ${
-                          featuredIndex === idx
-                            ? "w-8 bg-[#00AEEF]"
-                            : "w-2 bg-gray-600 hover:bg-gray-500"
-                        }`}
+                        className={`h-1.5 rounded-full transition-all ${featuredIndex === idx ? "w-8 bg-[#00AEEF]" : "w-1.5 bg-gray-600"}`}
                       />
                     ))}
                   </div>
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* Features Section with Hover Effects */}
-            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
-                  <Zap className="h-4 w-4 text-lime-500" />
-                  <span className="text-xs font-medium text-gray-300">
-                    Why Choose Us
-                  </span>
-                </div>
-                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
-                  The <span className="text-[#00AEEF]">AutoPulse</span>{" "}
-                  Advantage
-                </h2>
-                <p className="text-gray-400 max-w-2xl mx-auto">
-                  Experience automotive shopping like never before
-                </p>
-              </div>
+            {/* Features */}
+            <div>
+              <SectionHeader
+                icon={Cpu}
+                badge="CORE FEATURES"
+                title="The"
+                gradientText="AutoPulse Advantage"
+                description="Powered by next-generation technology"
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
                   {
                     icon: Zap,
                     title: "Lightning Fast",
-                    description:
-                      "Browse our extensive inventory with blazing fast search and filtering capabilities",
+                    description: "AI-powered search with instant results",
                     color: "blue",
-                    delay: 0,
                   },
                   {
                     icon: Shield,
-                    title: "Secure & Verified",
-                    description:
-                      "All vehicles are certified and verified by our expert team for your peace of mind",
+                    title: "Fully Verified",
+                    description: "Verified vehicle history & documentation",
                     color: "lime",
-                    delay: 100,
                   },
                   {
                     icon: Smartphone,
                     title: "Mobile Ready",
-                    description:
-                      "Shop anytime, anywhere with our fully responsive mobile application",
+                    description: "Seamless experience on any device",
                     color: "blue",
-                    delay: 200,
                   },
                   {
                     icon: Users,
-                    title: "Expert Support",
-                    description:
-                      "Our dedicated team is available 24/7 to help you find your perfect vehicle",
+                    title: "24/7 Support",
+                    description: "Expert assistance anytime",
                     color: "lime",
-                    delay: 300,
                   },
                   {
-                    icon: Headphones,
-                    title: "Customer First",
-                    description:
-                      "We prioritize your satisfaction with hassle-free transactions and support",
+                    icon: Network,
+                    title: "Global Network",
+                    description: "Connected dealer ecosystem",
                     color: "blue",
-                    delay: 400,
                   },
                   {
-                    icon: Award,
-                    title: "Verified Listings",
-                    description:
-                      "Every listing is authentic with complete vehicle history and documentation",
+                    icon: Lock,
+                    title: "Secure Payments",
+                    description: "Safe & encrypted transactions",
                     color: "lime",
-                    delay: 500,
                   },
                 ].map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 p-8 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:-translate-y-2"
-                    style={{ animationDelay: `${feature.delay}ms` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#00AEEF]/0 to-[#00AEEF]/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
-                    <div className="relative">
-                      <div
-                        className={`rounded-lg bg-${feature.color === "blue" ? "[#00AEEF]" : "lime-500"}/10 w-14 h-14 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
-                      >
-                        <feature.icon
-                          className={`h-7 w-7 text-${feature.color === "blue" ? "[#00AEEF]" : "lime-500"}`}
-                        />
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#00AEEF] transition-colors">
-                        {feature.title}
-                      </h3>
-                      <p className="text-gray-400 leading-relaxed">
-                        {feature.description}
-                      </p>
-                      <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-sm text-[#00AEEF] inline-flex items-center gap-1">
-                          Learn more <ArrowRight className="h-4 w-4" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <FeatureCard key={idx} {...feature} />
                 ))}
               </div>
-            </section>
+            </div>
 
-            {/* How It Works Section */}
-            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
-                  <Play className="h-4 w-4 text-lime-500" />
-                  <span className="text-xs font-medium text-gray-300">
-                    Simple Process
-                  </span>
-                </div>
-                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
-                  How <span className="text-[#00AEEF]">AutoPulse</span> Works
-                </h2>
-                <p className="text-gray-400 max-w-2xl mx-auto">
-                  Get your dream car in three simple steps
-                </p>
-              </div>
+            {/* How It Works */}
+            <div>
+              <SectionHeader
+                icon={Rocket}
+                badge="SIMPLE PROCESS"
+                title="How"
+                gradientText="AutoPulse Works"
+                description="Get your dream car in three easy steps"
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
                   {
                     step: "01",
                     icon: Eye,
-                    title: "Browse & Filter",
-                    description:
-                      "Explore our extensive collection with advanced filters",
-                    color: "blue",
+                    title: "Browse & Select",
+                    description: "Explore our collection with smart filters",
                   },
                   {
                     step: "02",
                     icon: CreditCard,
                     title: "Secure Payment",
-                    description:
-                      "Complete your purchase with our secure payment system",
-                    color: "lime",
+                    description: "Complete purchase with confidence",
                   },
                   {
                     step: "03",
                     icon: Truck,
                     title: "Fast Delivery",
-                    description: "Get your vehicle delivered within 48 hours",
-                    color: "blue",
+                    description: "Receive your vehicle in 48 hours",
                   },
                 ].map((step, idx) => (
-                  <div key={idx} className="relative group">
+                  <div key={idx} className="relative text-center">
                     {idx < 2 && (
-                      <div className="hidden md:block absolute top-1/2 left-full w-full h-0.5 bg-gradient-to-r from-[#00AEEF] to-lime-500 -translate-y-1/2 z-0"></div>
+                      <div className="hidden md:block absolute top-1/4 left-full w-full h-px bg-gradient-to-r from-[#00AEEF] to-lime-500" />
                     )}
-                    <div className="relative text-center p-8 rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 group-hover:border-[#00AEEF]/50 transition-all duration-500 group-hover:scale-105">
-                      <div className="text-6xl font-bold text-[#00AEEF]/20 mb-4 group-hover:text-[#00AEEF]/30 transition-colors">
+                    <div className="rounded-2xl border border-white/10 bg-black/45 p-8 backdrop-blur-sm transition-all hover:border-[#00AEEF]/40 hover:shadow-lg hover:shadow-[#00AEEF]/10">
+                      <div className="text-5xl font-bold text-[#00AEEF]/20 mb-4">
                         {step.step}
                       </div>
-                      <div className="rounded-full bg-gradient-to-r from-[#00AEEF]/20 to-lime-500/20 w-20 h-20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <step.icon className="h-10 w-10 text-[#00AEEF]" />
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#00AEEF]/20 to-lime-500/20 flex items-center justify-center mx-auto mb-4">
+                        <step.icon className="h-8 w-8 text-[#00AEEF]" />
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-3">
+                      <h3 className="text-lg font-bold text-white mb-2">
                         {step.title}
                       </h3>
-                      <p className="text-gray-400">{step.description}</p>
+                      <p className="text-sm text-gray-400">
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            {/* Testimonials Section */}
-            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1 backdrop-blur-sm mb-4">
-                  <Star className="h-4 w-4 text-lime-500" />
-                  <span className="text-xs font-medium text-gray-300">
-                    Testimonials
-                  </span>
-                </div>
-                <h2 className="text-4xl font-bold text-white md:text-5xl mb-4">
-                  What Our <span className="text-[#00AEEF]">Customers</span> Say
-                </h2>
-                <p className="text-gray-400 max-w-2xl mx-auto">
-                  Join thousands of satisfied customers who found their dream
-                  car with AutoPulse
-                </p>
-              </div>
+            {/* Testimonials */}
+            <div>
+              <SectionHeader
+                icon={Star}
+                badge="COMMUNITY LOVE"
+                title="What Our"
+                gradientText="Customers Say"
+                description="Join thousands of satisfied drivers"
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {testimonials.map((testimonial, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {testimonials.map((t, idx) => (
                   <div
                     key={idx}
-                    className="group relative rounded-2xl bg-gradient-to-br from-black/80 to-black/40 border border-white/10 p-8 transition-all duration-500 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20 hover:-translate-y-2"
+                    className="rounded-2xl border border-white/10 bg-black/45 p-6 backdrop-blur-sm transition-all hover:border-[#00AEEF]/40 hover:shadow-lg hover:shadow-[#00AEEF]/10"
                   >
-                    <div className="absolute top-4 right-4 text-[#00AEEF]/20 group-hover:text-[#00AEEF]/30 transition-colors">
-                      <svg
-                        className="h-8 w-8"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                      </svg>
-                    </div>
-                    <div className="relative">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00AEEF] to-lime-500 flex items-center justify-center text-white font-bold">
-                          {testimonial.avatar}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-white">
-                            {testimonial.name}
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            {testimonial.role}
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00AEEF] to-lime-500 flex items-center justify-center text-white font-bold">
+                        {t.avatar}
                       </div>
-                      <div className="flex gap-0.5 mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4 fill-lime-500 text-lime-500"
-                          />
-                        ))}
+                      <div>
+                        <h4 className="font-semibold text-white">{t.name}</h4>
+                        <p className="text-xs text-gray-500">{t.role}</p>
                       </div>
-                      <p className="text-gray-300 leading-relaxed">
-                        {testimonial.content}
-                      </p>
-                      <p className="mt-4 text-xs text-[#00AEEF]">
-                        {testimonial.company}
-                      </p>
                     </div>
+                    <div className="flex gap-0.5 mb-4">
+                      {[...Array(t.rating)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="h-4 w-4 fill-lime-500 text-lime-500"
+                        />
+                      ))}
+                    </div>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {t.content}
+                    </p>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            {/* CTA Section - Animated */}
-            <section className="relative rounded-3xl border border-white/10 bg-[#0B0B0B]/90 px-6 py-12 backdrop-blur-xl shadow-2xl shadow-black/20 md:px-10">
-              <div
-                className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#00AEEF]/20 to-[#0077b3]/20 border border-[#00AEEF]/30 p-12 transition-all duration-500 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
-                onMouseEnter={() => setIsHoveringCTA(true)}
-                onMouseLeave={() => setIsHoveringCTA(false)}
-              >
-                <div
-                  className={`absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2300AEEF" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50`}
-                ></div>
-                <div className="relative text-center">
-                  <h2 className="text-4xl font-bold text-white mb-4">
-                    Ready to Find Your Dream Car?
-                  </h2>
-                  <p className="text-gray-300 max-w-2xl mx-auto mb-8">
-                    Join thousands of satisfied customers who found their
-                    perfect vehicle with AutoPulse
-                  </p>
-                  <Link
-                    to="/listings"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00AEEF]/50 group"
-                  >
-                    <span>Browse Listings</span>
-                    <ArrowRight
-                      className={`h-5 w-5 transition-transform duration-300 ${isHoveringCTA ? "translate-x-1" : ""}`}
-                    />
-                  </Link>
-                  <p className="mt-6 text-xs text-gray-500">
-                    ⚡ Over 2,500+ cars sold • 🎉 98% customer satisfaction
-                  </p>
-                </div>
+            {/* CTA */}
+            <div
+              className="relative overflow-hidden rounded-3xl border border-[#00AEEF]/20 bg-gradient-to-r from-[#00AEEF]/10 to-[#0077b3]/10 p-8 text-center backdrop-blur-sm md:p-12"
+              onMouseEnter={() => setIsHoveringCTA(true)}
+              onMouseLeave={() => setIsHoveringCTA(false)}
+            >
+              <div className="relative">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Ready to Drive Your{" "}
+                  <span className="bg-gradient-to-r from-[#00AEEF] to-lime-400 bg-clip-text text-transparent">
+                    Dream Car
+                  </span>
+                  ?
+                </h2>
+                <p className="text-gray-300 max-w-2xl mx-auto mb-8">
+                  Join the future of automotive commerce today
+                </p>
+                <Link
+                  to="/listings"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#00AEEF] to-[#0077b3] text-white font-semibold rounded-lg hover:scale-105 transition-all duration-300"
+                >
+                  <span>Explore Inventory</span>
+                  <ArrowRight
+                    className={`h-5 w-5 transition-transform ${isHoveringCTA ? "translate-x-1" : ""}`}
+                  />
+                </Link>
+                <p className="mt-6 text-xs text-gray-500">
+                  ⚡ 2,500+ cars sold • 🎉 98% satisfaction • 🔒 Secure
+                  transactions
+                </p>
               </div>
-            </section>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
