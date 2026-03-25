@@ -155,13 +155,7 @@ const AnimatedCounter = ({ value, suffix = "" }) => {
 };
 
 // Section Header
-const SectionHeader = ({
-  icon: Icon,
-  badge,
-  title,
-  gradientText,
-  description,
-}) => (
+const SectionHeader = ({ badge, title, gradientText, description }) => (
   <div className="text-center mb-12">
     <div className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/30 bg-black/40 px-4 py-1.5 backdrop-blur-sm mb-4">
       <Icon className="h-4 w-4 text-lime-500" />
@@ -180,7 +174,7 @@ const SectionHeader = ({
 );
 
 // Feature Card
-const FeatureCard = ({ icon: Icon, title, description, color = "blue" }) => (
+const FeatureCard = ({ title, description, color = "blue" }) => (
   <div className="group rounded-2xl border border-white/10 bg-black/45 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-lg hover:shadow-[#00AEEF]/10">
     <div
       className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${
@@ -209,7 +203,6 @@ function Home() {
   const featuredCars = cars
     .filter((car) => car.horsepower > 450 && car.horsepower < 500)
     .slice(0, 5);
-  const [revealedRef, isRevealed] = useScrollReveal();
 
   const testimonials = [
     {

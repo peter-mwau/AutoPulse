@@ -27,7 +27,6 @@ import {
 import { Link } from "react-router-dom";
 
 function TradeIn() {
-  const [step, setStep] = useState(1);
   const [vehicleData, setVehicleData] = useState({
     make: "",
     model: "",

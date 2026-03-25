@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Calculator,
   CheckCircle,
@@ -26,8 +26,16 @@ function Financing() {
   const [loanAmount, setLoanAmount] = useState(35000);
   const [loanTerm, setLoanTerm] = useState(60);
   const [interestRate, setInterestRate] = useState(4.5);
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState("standard");
+
+  // Calculate monthly payment with useMemo to avoid setState in effect
+  const monthlyPayment = useMemo(() => {
+    const monthlyRate = interestRate / 100 / 12;
+    const payment =
+      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) /
+      (Math.pow(1 + monthlyRate, loanTerm) - 1);
+    return payment || 0;
+  }, [loanAmount, loanTerm, interestRate]);
 
   const perks = [
     {
@@ -102,15 +110,6 @@ function Financing() {
     },
   ];
 
-  // Calculate monthly payment
-  useEffect(() => {
-    const monthlyRate = interestRate / 100 / 12;
-    const payment =
-      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) /
-      (Math.pow(1 + monthlyRate, loanTerm) - 1);
-    setMonthlyPayment(payment || 0);
-  }, [loanAmount, loanTerm, interestRate]);
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -118,10 +117,6 @@ function Financing() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
-
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat("en-US").format(num);
   };
 
   return (
