@@ -119,7 +119,7 @@ function TradeIn() {
   };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-36 pb-20 overflow-hidden">
+    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-[250px] pb-20 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse" />

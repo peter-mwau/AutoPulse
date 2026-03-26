@@ -1,6 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
-  Car,
   Zap,
   Mail,
   MapPin,
@@ -19,37 +19,37 @@ function Footer() {
     {
       title: "Platform",
       links: [
-        { name: "Features", href: "#" },
-        { name: "Pricing", href: "#" },
-        { name: "Showcase", href: "#" },
-        { name: "Integrations", href: "#" },
+        { name: "Home", to: "/" },
+        { name: "Inventory", to: "/listings" },
+        { name: "Financing", to: "/financing" },
+        { name: "Trade-In", to: "/trade-in" },
       ],
     },
     {
       title: "Solutions",
       links: [
-        { name: "For Dealerships", href: "#" },
-        { name: "For Manufacturers", href: "#" },
-        { name: "For Fleet Owners", href: "#" },
-        { name: "Enterprise", href: "#" },
+        { name: "For Dealerships", to: "/about" },
+        { name: "For Buyers", to: "/listings" },
+        { name: "For Financing", to: "/financing" },
+        { name: "For Trade-Ins", to: "/trade-in" },
       ],
     },
     {
       title: "Resources",
       links: [
-        { name: "Documentation", href: "#" },
-        { name: "API Reference", href: "#" },
-        { name: "Support Center", href: "#" },
-        { name: "Status", href: "#" },
+        { name: "Support Center", to: "/contact" },
+        { name: "Live Inventory", to: "/listings" },
+        { name: "Payment Calculator", to: "/financing" },
+        { name: "Trade-In Estimate", to: "/trade-in" },
       ],
     },
     {
       title: "Company",
       links: [
-        { name: "About Us", href: "#" },
-        { name: "Blog", href: "#" },
-        { name: "Careers", href: "#" },
-        { name: "Contact", href: "#" },
+        { name: "About Us", to: "/about" },
+        { name: "Contact", to: "/contact" },
+        { name: "Privacy Policy", href: "#" },
+        { name: "Terms", href: "#" },
       ],
     },
   ];
@@ -61,9 +61,9 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative pt-5 border-t border-white/10 bg-gradient-to-b from-[#0B0B0B] to-[#050505]">
+    <footer className="relative border-t border-white/10 bg-linear-to-b from-[#0B0B0B] to-[#050505] pt-5">
       {/* Glow Effect at Top */}
-      <div className="absolute -top-px left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00AEEF] to-transparent"></div>
+      <div className="absolute -top-px left-0 h-px w-full bg-linear-to-r from-transparent via-[#00AEEF] to-transparent"></div>
 
       {/* Pulse Animation Line */}
       <div className="absolute left-0 top-0 h-px w-24 bg-lime-500 animate-pulse"></div>
@@ -73,7 +73,7 @@ function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-6">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
+            {/* <div className="flex items-center gap-2 mb-6">
               <div className="relative flex h-10 w-10 items-center justify-center">
                 <div className="absolute h-8 w-8 rotate-45 border-2 border-[#00AEEF]"></div>
                 <span className="relative text-2xl font-black text-white">
@@ -85,7 +85,12 @@ function Footer() {
                 <span className="text-white">Auto</span>
                 <span className="text-[#00AEEF]">Pulse</span>
               </h2>
-            </div>
+            </div> */}
+            <img
+              src="/AutoPulse_logo.png"
+              alt="AutoPulse Logo"
+              className="mb-6 h-20 w-30"
+            />
 
             <p className="mb-6 text-sm leading-relaxed text-gray-400 max-w-sm">
               End-to-end automotive commerce platform powering the next
@@ -121,15 +126,27 @@ function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link, linkIdx) => (
                   <li key={linkIdx}>
-                    <a
-                      href={link.href}
-                      className="group flex items-center gap-1 text-sm text-gray-400 transition-all hover:text-white"
-                    >
-                      <ChevronRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" />
-                      <span className="group-hover:translate-x-1 transition-transform">
-                        {link.name}
-                      </span>
-                    </a>
+                    {link.to ? (
+                      <Link
+                        to={link.to}
+                        className="group flex items-center gap-1 text-sm text-gray-400 transition-all hover:text-white"
+                      >
+                        <ChevronRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="group flex items-center gap-1 text-sm text-gray-400 transition-all hover:text-white"
+                      >
+                        <ChevronRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -158,7 +175,7 @@ function Footer() {
               </div>
               <button
                 type="submit"
-                className="group relative overflow-hidden rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2.5 text-sm font-medium text-white transition-all hover:scale-105"
+                className="group relative overflow-hidden rounded-lg bg-linear-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2.5 text-sm font-medium text-white transition-all hover:scale-105"
               >
                 <span className="relative z-10 flex items-center gap-1">
                   Subscribe

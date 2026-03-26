@@ -154,7 +154,7 @@ function Hero() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-3xl blur-2xl transform group-hover:scale-110 transition-transform duration-500" />
                 <img
-                  src="/car_dec.png"
+                  src="/car_dec2.png"
                   alt="3D Car Visualization"
                   className="relative w-full max-w-lg mx-auto transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-2 animate-float"
                   style={{

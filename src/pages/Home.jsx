@@ -173,24 +173,100 @@ const SectionHeader = ({ badge, title, gradientText, description }) => (
   </div>
 );
 
-// Feature Card
-const FeatureCard = ({ title, description, color = "blue" }) => (
-  <div className="group rounded-2xl border border-white/10 bg-black/45 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-lg hover:shadow-[#00AEEF]/10">
+// Feature Card with Overlay Reveal
+const FeatureCard = ({ title, description, color = "blue" }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  return (
     <div
-      className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${
-        color === "blue" ? "bg-[#00AEEF]/10" : "bg-lime-500/10"
-      }`}
+      className="group relative rounded-2xl border border-white/10 bg-black/45 p-6 backdrop-blur-sm transition-all duration-100 hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-lg hover:shadow-[#00AEEF]/10 overflow-hidden hover:cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <Zap
-        className={`h-6 w-6 ${
-          color === "blue" ? "text-[#00AEEF]" : "text-lime-500"
-        }`}
+      {/* Card Content */}
+      <div className="relative z-10">
+        <div
+          className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${
+            color === "blue" ? "bg-[#00AEEF]/10" : "bg-lime-500/10"
+          } transition-all duration-500`}
+        >
+          <Zap
+            className={`h-6 w-6 ${
+              color === "blue" ? "text-[#00AEEF]" : "text-lime-500"
+            }`}
+          />
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+        <p className="text-sm text-gray-400">{description}</p>
+      </div>
+
+      {/* Reveal Overlay */}
+      <div
+        className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#00AEEF]/30 via-lime-500/20 to-[#0077b3]/30 backdrop-blur-sm transition-all duration-700 ease-out"
+        style={{
+          clipPath: isHovered
+            ? "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)"
+            : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        }}
       />
     </div>
-    <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-    <p className="text-sm text-gray-400">{description}</p>
-  </div>
-);
+  );
+};
+
+const popularCarLogos = [
+  {
+    name: "Mercedes-Benz",
+    src: "https://www.carlogos.org/logo/Mercedes-Benz-logo-2011-1920x1080.png",
+  },
+  {
+    name: "Volkswagen",
+    src: "https://www.carlogos.org/logo/Volkswagen-logo-2019-1500x1500.png",
+  },
+  {
+    name: "BMW",
+    src: "/bmw-logo.png",
+  },
+  {
+    name: "Toyota",
+    src: "/toyota-logo.png",
+  },
+  {
+    name: "Honda",
+    src: "/honda-logo.png",
+  },
+  {
+    name: "Ford",
+    src: "https://www.carlogos.org/logo/Ford-logo-2003-1366x768.png",
+  },
+  {
+    name: "Nissan",
+    src: "https://www.carlogos.org/car-logos/nissan-logo-2001-2000x1750.png",
+  },
+  {
+    name: "Hyundai",
+    src: "https://www.carlogos.org/logo/Hyundai-logo-silver-2560x1440.png",
+  },
+  {
+    name: "Tesla",
+    src: "/tesla-logo.png",
+  },
+  {
+    name: "Acura",
+    src: "https://www.carlogos.org/logo/Acura-logo-1990-1024x768.png",
+  },
+  {
+    name: "Mistubishi",
+    src: "https://www.carlogos.org/logo/Mitsubishi-logo-2000x2500.png",
+  },
+  {
+    name: "Mazda",
+    src: "/mazda-logo.png",
+  },
+  {
+    name: "Subaru",
+    src: "/subaru-logo.png",
+  },
+];
 
 function Home() {
   const { cars } = useCars();
@@ -320,6 +396,44 @@ function Home() {
                   <p className="text-xs text-lime-500 mt-1">{stat.growth}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Brand Marquee */}
+            <div className="relative overflow-hidden rounded-3xl  py-6 backdrop-blur-sm">
+              <div className="mb-4 px-6 text-center">
+                <p className="text-xs font-semibold tracking-[0.22em] pb-5 text-[#00AEEF]">
+                  TRUSTED BRANDS IN OUR INVENTORY
+                </p>
+              </div>
+
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-linear-to-r from-[#0B0B0B] to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-linear-to-l from-[#0B0B0B] to-transparent" />
+
+              <div className="group flex overflow-hidden">
+                {[0, 1].map((trackIndex) => (
+                  <div
+                    key={trackIndex}
+                    className="flex min-w-full shrink-0 animate-[logoMarquee_36s_linear_infinite] items-center gap-10 px-6 group-hover:[animation-play-state:paused]"
+                  >
+                    {popularCarLogos.map((logo) => (
+                      <a
+                        key={`${trackIndex}-${logo.name}`}
+                        href="https://www.carlogos.org/car-brands/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group/logo flex h-14 w-40 items-center justify-center rounded-xl border border-white/10 bg-black/45 px-4 transition-all hover:border-[#00AEEF]/50"
+                      >
+                        <img
+                          src={logo.src}
+                          alt={`${logo.name} logo`}
+                          loading="lazy"
+                          className="max-h-10 w-full object-contain opacity-80 transition-all duration-300 group-hover/logo:opacity-100"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Featured Cars */}
@@ -507,15 +621,15 @@ function Home() {
                     description: "Receive your vehicle in 48 hours",
                   },
                 ].map((step, idx) => (
-                  <div key={idx} className="relative text-center">
+                  <div key={idx} className="relative text-center group/step">
                     {idx < 2 && (
-                      <div className="hidden md:block absolute top-1/4 left-full w-full h-px bg-gradient-to-r from-[#00AEEF] to-lime-500" />
+                      <div className="hidden md:block absolute top-1/4 left-full w-full h-px bg-gradient-to-r from-[#00AEEF] to-lime-500 transition-all opacity-60 group-hover/step:opacity-100" />
                     )}
-                    <div className="rounded-2xl border border-white/10 bg-black/45 p-8 backdrop-blur-sm transition-all hover:border-[#00AEEF]/40 hover:shadow-lg hover:shadow-[#00AEEF]/10">
-                      <div className="text-5xl font-bold text-[#00AEEF]/20 mb-4">
+                    <div className="rounded-2xl border border-white/10 bg-black/45 p-8 backdrop-blur-sm transition-all duration-300 hover:border-[#00AEEF]/40 hover:shadow-lg hover:shadow-[#00AEEF]/10 group-hover/step:scale-105 group-hover/step:-translate-y-2">
+                      <div className="text-5xl font-bold text-[#00AEEF]/20 mb-4 group-hover/step:text-[#00AEEF]/40 transition-all duration-300">
                         {step.step}
                       </div>
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#00AEEF]/20 to-lime-500/20 flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#00AEEF]/20 to-lime-500/20 flex items-center justify-center mx-auto mb-4 group-hover/step:from-[#00AEEF]/40 group-hover/step:to-lime-500/40 transition-all duration-300">
                         <step.icon className="h-8 w-8 text-[#00AEEF]" />
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">
@@ -563,13 +677,27 @@ function Home() {
                         />
                       ))}
                     </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">
+                    <p className="text-gray-300 text-sm leading-relaxed group-hover:text-white transition-colors duration-300">
                       {t.content}
                     </p>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Floating Animation Style */}
+            <style>
+              {`
+                @keyframes floatUp {
+                  0%, 100% { transform: translateY(0px); }
+                  50% { transform: translateY(-8px); }
+                }
+                
+                .animate-float-slow {
+                  animation: floatUp 4s ease-in-out infinite;
+                }
+              `}
+            </style>
 
             {/* CTA */}
             <div
@@ -606,6 +734,17 @@ function Home() {
           </div>
         </div>
       </div>
+
+      <style>
+        {`@keyframes logoMarquee {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-100%);
+            }
+          }`}
+      </style>
     </div>
   );
 }

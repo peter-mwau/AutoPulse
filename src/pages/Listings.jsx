@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useCars } from "../contexts/carsContext";
 import {
   Search,
@@ -191,7 +192,7 @@ function Listings() {
 
   return (
     <>
-      <div className="relative pt-[150px] min-h-screen bg-gradient-to-br pb-5 from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24">
+      <div className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pb-5 pt-60">
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
           {/* Header */}
           <div className="mb-12 text-center">
@@ -512,9 +513,12 @@ function Listings() {
                         >
                           Quick View
                         </button>
-                        <button className="flex-1 rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105">
-                          Buy Now
-                        </button>
+                        <Link
+                          to={`/listings/${car.id}`}
+                          className="flex-1 rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105"
+                        >
+                          View Details
+                        </Link>
                       </div>
                     </div>
                   </div>
