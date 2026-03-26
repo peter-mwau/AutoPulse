@@ -437,11 +437,27 @@ function Listings() {
           {/* Car Grid */}
           {paginatedCars.length > 0 ? (
             <>
+              <style>{`
+                @keyframes slideUpStagger {
+                  from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+                .card-stagger {
+                  animation: slideUpStagger 0.6s ease-out forwards;
+                }
+              `}</style>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {paginatedCars.map((car) => (
+                {paginatedCars.map((car, idx) => (
                   <div
                     key={car.id}
-                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-black/80 to-black/40 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                    className="card-stagger group relative overflow-hidden rounded-2xl bg-gradient-to-b from-black/80 to-black/40 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     {/* Image Container */}
                     <div className="relative h-48 overflow-hidden bg-black/50">

@@ -299,7 +299,16 @@ function Financing() {
                   Your Estimated Payment
                 </h3>
                 <div className="mb-6">
-                  <p className="text-4xl md:text-5xl font-bold text-white">
+                  <style>{`
+                    @keyframes countUp {
+                      from { opacity: 0; transform: translateY(10px); }
+                      to { opacity: 1; transform: translateY(0); }
+                    }
+                    .payment-counter {
+                      animation: countUp 0.8s ease-out;
+                    }
+                  `}</style>
+                  <p className="payment-counter text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-[#00AEEF] to-lime-400 bg-clip-text">
                     {formatCurrency(monthlyPayment)}
                   </p>
                   <p className="text-gray-400 mt-1">per month</p>

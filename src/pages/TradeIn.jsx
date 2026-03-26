@@ -58,6 +58,35 @@ function TradeIn() {
     },
   ];
 
+  // Animated counter component
+  const AnimatedCounter = ({ value, label }) => {
+    const [displayValue, setDisplayValue] = React.useState(0);
+
+    React.useEffect(() => {
+      let start = 0;
+      const increment = value / 30;
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= value) {
+          setDisplayValue(value);
+          clearInterval(timer);
+        } else {
+          setDisplayValue(Math.floor(start));
+        }
+      }, 30);
+      return () => clearInterval(timer);
+    }, [value]);
+
+    return (
+      <div>
+        <p className="text-2xl font-bold text-[#00AEEF]">
+          ${displayValue.toLocaleString()}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">{label}</p>
+      </div>
+    );
+  };
+
   const conditions = [
     {
       value: "excellent",
