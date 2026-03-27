@@ -6,6 +6,9 @@ import ThemeContext from "../contexts/themeContext";
 function Navbar() {
   const { darkMode, toggleTheme } = useContext(ThemeContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNavStyled, setIsNavStyled] = useState(
+    () => typeof window !== "undefined" && window.scrollY > 0,
+  );
   const navbarRef = useRef(null);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -34,10 +37,23 @@ function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setIsNavStyled(currentScrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const getNavClassName = ({ isActive }) =>
-    `relative text-sm font-medium transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-[#00AEEF] after:transition-all after:duration-300 ${
+    `relative text-sm font-medium transition-colors after:absolute after:top-5 after:left-0 after:h-[2px] after:bg-[#00AEEF] after:transition-all after:duration-300 ${
       isActive
-        ? "text-white after:w-full"
+        ? "text-[#00AEEF] after:w-full after:top-5 after:opacity-100"
         : "text-gray-300 hover:text-white after:w-0 hover:after:w-full"
     }`;
 
@@ -46,7 +62,13 @@ function Navbar() {
       ref={navbarRef}
       className="fixed top-4 left-1/2 z-50 w-[90%] max-w-7xl -translate-x-1/2"
     >
-      <div className="flex items-center justify-between rounded-2xl dark:bg-[#0B0B0B]/80 p-2 px-6 shadow-2xl shadow-[#00AEEF]/20 backdrop-blur-xl border dark:border-white/10">
+      <div
+        className={`flex items-center justify-between rounded-2xl p-2 px-6 transition-all duration-300 ${
+          isNavStyled
+            ? "dark:bg-[#0B0B0B]/80 shadow-2xl shadow-[#00AEEF]/20 backdrop-blur-xl border dark:border-white/10"
+            : "bg-transparent shadow-none backdrop-blur-none border-transparent"
+        }`}
+      >
         {/* Logo Area */}
         <div className="flex items-center gap-2">
           <Link to="/" className="cursor-pointer">
@@ -69,6 +91,11 @@ function Navbar() {
             <li>
               <NavLink to="/listings" className={getNavClassName}>
                 Inventory
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/about" className={getNavClassName}>
+                About
               </NavLink>
             </li>
             <li>
@@ -157,6 +184,21 @@ function Navbar() {
                 }
               >
                 Inventory
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/about"
+                onClick={closeMobileMenu}
+                className={({ isActive }) =>
+                  `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#00AEEF]/20 text-white"
+                      : "text-gray-300 hover:bg-white/5 hover:text-white"
+                  }`
+                }
+              >
+                About
               </NavLink>
             </li>
             <li>

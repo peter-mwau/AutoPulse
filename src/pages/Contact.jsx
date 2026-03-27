@@ -87,7 +87,7 @@ function Contact() {
   ];
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-36 pb-20 overflow-hidden">
+    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-[250px] pb-20 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-10 w-96 h-96 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse" />
@@ -222,7 +222,13 @@ function Contact() {
                       Name *
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                      <style>{`
+                        .form-input-focus:focus {
+                          box-shadow: 0 0 20px rgba(0, 174, 239, 0.3);
+                          border-color: #00AEEF;
+                        }
+                      `}</style>
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 transition-colors group-focus-within:text-[#00AEEF]" />
                       <input
                         type="text"
                         required
@@ -230,7 +236,7 @@ function Contact() {
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all"
+                        className="form-input-focus w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all duration-300"
                         placeholder="John Doe"
                       />
                     </div>
@@ -240,7 +246,7 @@ function Contact() {
                       Email *
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 transition-colors" />
                       <input
                         type="email"
                         required
@@ -248,7 +254,7 @@ function Contact() {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all"
+                        className="form-input-focus w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all duration-300"
                         placeholder="john@example.com"
                       />
                     </div>
@@ -261,14 +267,14 @@ function Contact() {
                       Phone
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 transition-colors" />
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) =>
                           setFormData({ ...formData, phone: e.target.value })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all"
+                        className="form-input-focus w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all duration-300"
                         placeholder="+1 (555) 123-4567"
                       />
                     </div>
@@ -283,7 +289,7 @@ function Contact() {
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
                       }
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:border-[#00AEEF] focus:outline-none transition-all"
+                      className="form-input-focus w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:border-[#00AEEF] focus:outline-none transition-all duration-300"
                     >
                       <option value="">Select subject</option>
                       <option value="sales">Sales Inquiry</option>
@@ -306,7 +312,7 @@ function Contact() {
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all resize-none"
+                    className="form-input-focus w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-gray-500 focus:border-[#00AEEF] focus:outline-none transition-all duration-300 resize-none"
                     placeholder="Tell us about your inquiry..."
                   />
                 </div>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useCars } from "../contexts/carsContext";
 import {
   Search,
@@ -191,7 +192,7 @@ function Listings() {
 
   return (
     <>
-      <div className="relative pt-[150px] min-h-screen bg-gradient-to-br pb-5 from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-24">
+      <div className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pb-5 pt-60">
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
           {/* Header */}
           <div className="mb-12 text-center">
@@ -436,11 +437,27 @@ function Listings() {
           {/* Car Grid */}
           {paginatedCars.length > 0 ? (
             <>
+              <style>{`
+                @keyframes slideUpStagger {
+                  from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+                .card-stagger {
+                  animation: slideUpStagger 0.6s ease-out forwards;
+                }
+              `}</style>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {paginatedCars.map((car) => (
+                {paginatedCars.map((car, idx) => (
                   <div
                     key={car.id}
-                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-black/80 to-black/40 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                    className="card-stagger group relative overflow-hidden rounded-2xl bg-gradient-to-b from-black/80 to-black/40 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-[#00AEEF]/50 hover:shadow-2xl hover:shadow-[#00AEEF]/20"
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     {/* Image Container */}
                     <div className="relative h-48 overflow-hidden bg-black/50">
@@ -512,9 +529,12 @@ function Listings() {
                         >
                           Quick View
                         </button>
-                        <button className="flex-1 rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105">
-                          Buy Now
-                        </button>
+                        <Link
+                          to={`/listings/${car.id}`}
+                          className="flex-1 rounded-lg bg-gradient-to-r from-[#00AEEF] to-[#0077b3] px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105"
+                        >
+                          View Details
+                        </Link>
                       </div>
                     </div>
                   </div>

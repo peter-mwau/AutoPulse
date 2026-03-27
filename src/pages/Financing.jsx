@@ -120,7 +120,7 @@ function Financing() {
   };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-36 pb-20 overflow-hidden">
+    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-[250px] pb-20 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-10 w-96 h-96 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse" />
@@ -299,7 +299,16 @@ function Financing() {
                   Your Estimated Payment
                 </h3>
                 <div className="mb-6">
-                  <p className="text-4xl md:text-5xl font-bold text-white">
+                  <style>{`
+                    @keyframes countUp {
+                      from { opacity: 0; transform: translateY(10px); }
+                      to { opacity: 1; transform: translateY(0); }
+                    }
+                    .payment-counter {
+                      animation: countUp 0.8s ease-out;
+                    }
+                  `}</style>
+                  <p className="payment-counter text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-[#00AEEF] to-lime-400 bg-clip-text">
                     {formatCurrency(monthlyPayment)}
                   </p>
                   <p className="text-gray-400 mt-1">per month</p>

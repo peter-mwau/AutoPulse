@@ -58,6 +58,35 @@ function TradeIn() {
     },
   ];
 
+  // Animated counter component
+  const AnimatedCounter = ({ value, label }) => {
+    const [displayValue, setDisplayValue] = React.useState(0);
+
+    React.useEffect(() => {
+      let start = 0;
+      const increment = value / 30;
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= value) {
+          setDisplayValue(value);
+          clearInterval(timer);
+        } else {
+          setDisplayValue(Math.floor(start));
+        }
+      }, 30);
+      return () => clearInterval(timer);
+    }, [value]);
+
+    return (
+      <div>
+        <p className="text-2xl font-bold text-[#00AEEF]">
+          ${displayValue.toLocaleString()}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">{label}</p>
+      </div>
+    );
+  };
+
   const conditions = [
     {
       value: "excellent",
@@ -119,7 +148,7 @@ function TradeIn() {
   };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-36 pb-20 overflow-hidden">
+    <main className="relative min-h-screen bg-gradient-to-br from-[#0B0B0B] via-[#0F0F0F] to-[#050505] pt-[250px] pb-20 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#00AEEF]/5 rounded-full blur-3xl animate-pulse" />
